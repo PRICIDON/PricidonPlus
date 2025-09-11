@@ -5,7 +5,7 @@ import {
   PaymentMethodsEnum,
   YookassaService,
 } from "nestjs-yookassa";
-import { BillingPeriod, Plan, Transaction } from "@prisma/client";
+import { BillingPeriod, type Plan, type Transaction } from "@prisma/client";
 
 @Injectable()
 export class YoomoneyService {

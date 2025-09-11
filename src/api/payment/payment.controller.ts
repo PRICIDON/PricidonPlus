@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Post } from "@nestjs/common";
 import { PaymentService } from "./payment.service";
 import { Authorized } from "../../common/decorators/authrorized.decorator";
 import { User } from "@prisma/client";
@@ -30,7 +30,9 @@ export class PaymentController {
     return this.paymentService.init(dto, user);
   }
   @Post("webhook")
+  @HttpCode(200)
   async webhook(@Body() dto: any) {
     console.log("PAYMENT WEBHOOK: ", dto);
+    return dto
   }
 }
