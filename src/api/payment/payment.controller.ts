@@ -29,10 +29,4 @@ export class PaymentController {
   async init(@Body() dto: InitPaymentRequest, @Authorized() user: User) {
     return this.paymentService.init(dto, user);
   }
-  @Post("webhook")
-  @HttpCode(200)
-  async webhook(@Body() dto: any) {
-    console.log("PAYMENT WEBHOOK: ", dto);
-    return dto
-  }
 }
