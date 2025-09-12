@@ -1,5 +1,14 @@
-import { Body, Controller, HttpCode, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Headers,
+  Req,
+  type RawBodyRequest,
+} from "@nestjs/common";
 import { WebhookService } from "./webhook.service";
+import type { Request } from "express";
 
 @Controller("webhook")
 export class WebhookController {
@@ -13,7 +22,16 @@ export class WebhookController {
 
   @Post("stripe")
   @HttpCode(200)
-  async handleStripe(@Body() dto: any) {
-    console.log("STRIPE WEBHOOK: ", dto);
+  async handleStripe(
+    @Req() req: RawBodyRequest<Request>,
+    @Headers("stripe-signature") sig: string,
+  ) {
+    return await this.webhookService.handleStripe(req.rawBody, sig);
+  }
+
+  @Post("crypto")
+  @HttpCode(200)
+  async handleCrypto(@Body() dto: any) {
+    console.log("CRYPTO WEBHOOK: ", dto);
   }
 }
