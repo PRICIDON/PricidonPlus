@@ -104,10 +104,9 @@ export class PaymentService {
         );
         break;
       case PaymentProvider.CRYPTOPAY:
-        payment = await this.cryptoService.createInvoice(plan, transaction);
+        payment = await this.cryptoService.create(plan, transaction);
         break;
     }
-    console.log(payment);
 
     await this.prismaService.transaction.update({
       where: {
