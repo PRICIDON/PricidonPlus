@@ -7,7 +7,7 @@ import { Plan, Transaction } from "@prisma/client";
 import { CryptoResponse, FiatCurrency } from "./interfaces/common.interface";
 import {
   CreateInvoiceRequest,
-  PaidButtonName,
+  Currency,
 } from "./interfaces/create-invoice.interface";
 import { createHash, createHmac } from "crypto";
 
@@ -24,7 +24,7 @@ export class CryptoService {
   async create(plan: Plan, transaction: Transaction) {
     const payload: CreateInvoiceRequest = {
       amount: transaction.amount,
-      currency_type: "fiat",
+      currency_type: Currency.FIAT,
       fiat: FiatCurrency.RUB,
       description: `Оплата подписки на тарифный план: ${plan.title}`,
       hidden_message: "Спасибо за оплату! Подписка активирована",

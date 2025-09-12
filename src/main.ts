@@ -6,12 +6,17 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import { getCorsConfig } from "./config";
 import { getSwaggerConfig } from "./config/swagger.config";
 import { SwaggerModule } from "@nestjs/swagger";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
 
   const config = app.get(ConfigService);
   const logger = new Logger(AppModule.name);
+
+  app.set("trust proxy", true);
 
   app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
 

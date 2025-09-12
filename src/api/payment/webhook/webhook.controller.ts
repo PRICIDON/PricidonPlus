@@ -7,9 +7,11 @@ import {
   Req,
   type RawBodyRequest,
   UnauthorizedException,
+  Ip,
 } from "@nestjs/common";
 import { WebhookService } from "./webhook.service";
 import type { Request } from "express";
+import { YookassaWebhookDto } from "./dto/yookassa-webhook.dto";
 
 @Controller("webhook")
 export class WebhookController {
@@ -17,8 +19,8 @@ export class WebhookController {
 
   @Post("yookassa")
   @HttpCode(200)
-  async handleYookassa(@Body() dto: any) {
-    console.log("YOOKASSA WEBHOOK: ", dto);
+  async handleYookassa(@Body() dto: YookassaWebhookDto, @Ip() ip: string) {
+    return await this.webhookService.handleYookassa(dto, ip);
   }
 
   @Post("stripe")

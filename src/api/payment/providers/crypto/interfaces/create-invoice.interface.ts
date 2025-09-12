@@ -4,7 +4,10 @@ import {
   FiatCurrency,
 } from "./common.interface";
 
-export type Currency = "crypto" | "fiat";
+export enum Currency {
+  CRYPTO = "crypto",
+  FIAT = "fiat",
+}
 export enum PaidButtonName {
   VIEW_ITEM = "viewItem",
   OPEN_CHANNEL = "openChannel",
