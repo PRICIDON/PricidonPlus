@@ -6,6 +6,7 @@ export function getMailerConfig(configService: ConfigService): MailerOptions {
     transport: {
       host: configService.getOrThrow("MAIL_HOST"),
       port: configService.getOrThrow("MAIL_PORT"),
+      secure: true,
       auth: {
         user: configService.getOrThrow("MAIL_LOGIN"),
         pass: configService.getOrThrow("MAIL_PASSWORD"),
