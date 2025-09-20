@@ -5,9 +5,15 @@ import {
   PaymentMethodsEnum,
   YookassaService,
 } from "nestjs-yookassa";
-import { type Plan, type Transaction, TransactionStatus } from "@prisma/client";
+import {
+  type Plan,
+  type Transaction,
+  TransactionStatus,
+  User,
+} from "@prisma/client";
 import { YookassaWebhookDto } from "../../webhook/dto/yookassa-webhook.dto";
 import { type PaymentWebhookResult } from "../../interfaces/payment-webhook.interface";
+import { VatCodesEnum } from "nestjs-yookassa/dist/interfaces/receipt-details.interface";
 
 @Injectable()
 export class YoomoneyService {
@@ -39,6 +45,40 @@ export class YoomoneyService {
         type: ConfirmationEnum.redirect,
         return_url: "http://localhost:3000",
       },
+      save_payment_method: true,
+      metadata: {
+        transactionId: transaction.id,
+        planId: plan.id,
+      },
+    });
+    return payment;
+  }
+
+  async createBySavedCard(plan: Plan, user: User, transaction: Transaction) {
+    const payment = await this.yookassaService.createPayment({
+      amount: {
+        value: transaction.amount,
+        currency: CurrencyEnum.RUB,
+      },
+      description: `Рекуррентное списание за тариф "${plan.title}"`,
+      receipt: {
+        customer: {
+          email: user.email,
+        },
+        items: [
+          {
+            description: `Рекуррентное списание за тариф "${plan.title}"`,
+            quantity: 1,
+            amount: {
+              value: transaction.amount,
+              currency: CurrencyEnum.RUB,
+            },
+            vat_code: VatCodesEnum.ndsNone,
+          },
+        ],
+      },
+      payment_method_id: transaction.externelId ?? "",
+      capture: true,
       save_payment_method: true,
       metadata: {
         transactionId: transaction.id,

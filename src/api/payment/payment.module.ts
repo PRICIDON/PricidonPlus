@@ -5,10 +5,11 @@ import { YoomoneyModule } from "./providers/yoomoney/yoomoney.module";
 import { StripeModule } from "./providers/stripe/stripe.module";
 import { WebhookModule } from './webhook/webhook.module';
 import { CryptoModule } from './providers/crypto/crypto.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   controllers: [PaymentController],
   providers: [PaymentService],
-  imports: [YoomoneyModule, StripeModule, WebhookModule, CryptoModule],
+  imports: [YoomoneyModule, StripeModule, WebhookModule, CryptoModule, SchedulerModule],
 })
 export class PaymentModule {}
