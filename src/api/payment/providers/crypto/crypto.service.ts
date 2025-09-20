@@ -3,13 +3,16 @@ import { ConfigService } from "@nestjs/config";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
 import { CRYPTOPAY_API_URL } from "../../constants/payment.constant";
-import { Plan, Transaction } from "@prisma/client";
+import { Plan, Transaction, TransactionStatus } from "@prisma/client";
 import { CryptoResponse, FiatCurrency } from "./interfaces/common.interface";
 import {
   CreateInvoiceRequest,
   Currency,
+  InvoiceStatus,
 } from "./interfaces/create-invoice.interface";
 import { createHash, createHmac } from "crypto";
+import type { PaymentWebhookResult } from "../../interfaces/payment-webhook.interface";
+import { CryptoWebhookDto } from "../../webhook/dto/crypto-webhook.dto";
 
 @Injectable()
 export class CryptoService {
@@ -30,11 +33,43 @@ export class CryptoService {
       hidden_message: "Спасибо за оплату! Подписка активирована",
       // paid_btn_name: PaidButtonName.CALLBACK,
       // paid_btn_url: "https://pricidon.ru",
+      payload: Buffer.from(
+        JSON.stringify({ transactionId: transaction.id, planId: plan.id }),
+      ).toString("base64url"),
     };
 
     const response = await this.makeRequest("POST", "/createInvoice", payload);
 
     return response.result;
+  }
+
+  async handleWebhook(dto: CryptoWebhookDto): Promise<PaymentWebhookResult> {
+    const payload = JSON.parse(
+      Buffer.from(dto.payload.payload ?? "", "base64").toString("utf-8"),
+    );
+
+    const transactionId = payload.metadata.transactionId;
+    const planId = payload.metadata.planId;
+    const paymentId = dto.payload.invoice_id.toString();
+
+    let status: TransactionStatus = TransactionStatus.PENDING;
+
+    switch (dto.payload.status) {
+      case InvoiceStatus.PAID:
+        status = TransactionStatus.SUCCEEDED;
+        break;
+      case InvoiceStatus.EXPIRED:
+        status = TransactionStatus.FAILED;
+        break;
+    }
+
+    return {
+      transactionId,
+      planId,
+      paymentId,
+      status,
+      raw: dto,
+    };
   }
 
   verifyWebhook(rawBody: Buffer, sig: string) {

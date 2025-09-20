@@ -5,7 +5,9 @@ import {
   PaymentMethodsEnum,
   YookassaService,
 } from "nestjs-yookassa";
-import { type Plan, type Transaction } from "@prisma/client";
+import { type Plan, type Transaction, TransactionStatus } from "@prisma/client";
+import { YookassaWebhookDto } from "../../webhook/dto/yookassa-webhook.dto";
+import { type PaymentWebhookResult } from "../../interfaces/payment-webhook.interface";
 
 @Injectable()
 export class YoomoneyService {
@@ -38,11 +40,40 @@ export class YoomoneyService {
         return_url: "http://localhost:3000",
       },
       save_payment_method: true,
-      // metadata: {
-      //   provider: "yookassa",
-      // },
+      metadata: {
+        transactionId: transaction.id,
+        planId: plan.id,
+      },
     });
     return payment;
+  }
+
+  async handleWebhook(dto: YookassaWebhookDto): Promise<PaymentWebhookResult> {
+    const transactionId = dto.object.metadata.transactionId;
+    const planId = dto.object.metadata.planId;
+    const paymentId = dto.object.id;
+
+    let status: TransactionStatus = TransactionStatus.PENDING;
+
+    switch (dto.event) {
+      case "payment.waiting_for_capture":
+        await this.yookassaService.capturePayment(paymentId);
+        break;
+      case "payment.succeeded":
+        status = TransactionStatus.SUCCEEDED;
+        break;
+      case "payment.canceled":
+        status = TransactionStatus.FAILED;
+        break;
+    }
+
+    return {
+      transactionId,
+      planId,
+      paymentId,
+      status,
+      raw: dto,
+    };
   }
 
   async verifyWebhook(ip: string) {

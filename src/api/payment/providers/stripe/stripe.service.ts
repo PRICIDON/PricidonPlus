@@ -5,8 +5,10 @@ import {
   BillingPeriod,
   type Plan,
   type Transaction,
+  TransactionStatus,
   User,
 } from "@prisma/client";
+import { PaymentWebhookResult } from "../../interfaces/payment-webhook.interface";
 
 @Injectable()
 export class StripeService {
@@ -49,8 +51,55 @@ export class StripeService {
       mode: "subscription",
       success_url: successUrl,
       cancel_url: cancelUrl,
+      metadata: {
+        transactionId: transaction.id,
+        planId: plan.id,
+      },
     });
     return session;
+  }
+
+  async handleWebhook(
+    event: Stripe.Event,
+  ): Promise<PaymentWebhookResult | null> {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const payment = event.data.object as Stripe.Checkout.Session;
+
+        const transactionId = payment.metadata.transactionId;
+        const planId = payment.metadata.planId;
+        const paymentId = payment.id;
+
+        if (!transactionId || !planId) return null;
+
+        return {
+          transactionId,
+          paymentId,
+          planId,
+          status: TransactionStatus.SUCCEEDED,
+          raw: event,
+        };
+      }
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+
+        const transactionId = invoice.metadata.transactionId;
+        const planId = invoice.metadata.planId;
+        const paymentId = invoice.id;
+
+        if (!transactionId || !planId || !paymentId) return null;
+
+        return {
+          transactionId,
+          paymentId,
+          planId,
+          status: TransactionStatus.FAILED,
+          raw: event,
+        };
+      }
+      default:
+        return null;
+    }
   }
 
   async parseEvent(rawBody: Buffer, signature: string): Promise<Stripe.Event> {
