@@ -6,12 +6,16 @@ import {
   SubscriptionStatus,
   TransactionStatus,
 } from "@prisma/client";
+import { MailService } from "../../libs/mail/mail.service";
 
 @Injectable()
 export class PaymentHandler {
   private readonly logger = new Logger(PaymentHandler.name);
 
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async processResult(result: PaymentWebhookResult) {
     const { transactionId, paymentId, planId, raw, status } = result;
@@ -82,6 +86,12 @@ export class PaymentHandler {
           },
         },
       });
+
+      await this.mailService.sendPaymentSuccessEmail(
+        subscription.user,
+        transaction,
+      );
+
       this.logger.log(`Payment succeeded: ${subscription.user.email}`);
     } else if (status === TransactionStatus.FAILED) {
       await this.prismaService.userSubscription.update({

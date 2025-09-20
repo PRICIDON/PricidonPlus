@@ -16,6 +16,7 @@
     "db:seed": "ts-node ./src/infra/prisma/prisma.seed.ts"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.2",
@@ -26,6 +27,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^11.2.0",
     "@prisma/client": "^6.15.0",
+    "@react-email/components": "^0.5.3",
     "argon2": "^0.44.0",
     "axios": "^1.11.0",
     "class-transformer": "^0.5.1",
@@ -37,6 +39,9 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.15.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-email": "^4.2.11",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "stripe": "^18.5.0"
