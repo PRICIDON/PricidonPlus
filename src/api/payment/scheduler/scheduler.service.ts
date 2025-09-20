@@ -62,6 +62,7 @@ export class SchedulerService {
           data: {
             amount: lastTransaction.amount,
             provider: PaymentProvider.YOOKASSA,
+            externelId: lastTransaction.externelId,
             billingPeriod: lastTransaction.billingPeriod,
             user: {
               connect: {
