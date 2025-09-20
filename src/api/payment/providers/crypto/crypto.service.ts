@@ -48,8 +48,8 @@ export class CryptoService {
       Buffer.from(dto.payload.payload ?? "", "base64").toString("utf-8"),
     );
 
-    const transactionId = payload.metadata.transactionId;
-    const planId = payload.metadata.planId;
+    const transactionId = payload.transactionId;
+    const planId = payload.planId;
     const paymentId = dto.payload.invoice_id.toString();
 
     let status: TransactionStatus = TransactionStatus.PENDING;
