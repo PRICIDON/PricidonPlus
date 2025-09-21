@@ -28,6 +28,8 @@ export class WebhookService {
   async handleStripe(rawBody: Buffer, sig: string) {
     const event = await this.stripeService.parseEvent(rawBody, sig);
 
+    console.log("STRIPE WEBHOOK: ", event.type);
+
     const result = await this.stripeService.handleWebhook(event);
 
     if (!result) return { ok: true };

@@ -16,7 +16,7 @@ export class SchedulerService {
     private yoomoneyService: YoomoneyService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_12_HOURS)
   async handleAutoBilling() {
     const users = await this.prismaService.user.findMany({
       where: {
@@ -94,6 +94,73 @@ export class SchedulerService {
           this.logger.error(`Payment failed: ${user.email} - ${error.message}`);
         }
       }
+    }
+  }
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  public async expireSubscriptions() {
+    const now = new Date();
+
+    const subscriptions = await this.prismaService.userSubscription.findMany({
+      where: {
+        status: SubscriptionStatus.ACTIVE,
+        endDate: {
+          lte: now,
+        },
+      },
+      include: {
+        user: {
+          include: {
+            transactions: {
+              where: {
+                status: TransactionStatus.SUCCEEDED,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+            },
+          },
+        },
+        plan: true,
+      },
+    });
+
+    const filteredSubscriptions = subscriptions.filter((sub) => {
+      const lastTransaction = sub.user.transactions[0];
+
+      if (!lastTransaction) return false;
+
+      switch (lastTransaction.provider) {
+        case PaymentProvider.YOOKASSA:
+        case PaymentProvider.STRIPE:
+          return sub.user.isAutoRenewal === false;
+
+        case PaymentProvider.CRYPTOPAY:
+          return true;
+
+        default:
+          return false;
+      }
+    });
+
+    if (!filteredSubscriptions.length) {
+      this.logger.log("✅ No subscriptions to process");
+      return;
+    }
+
+    for (const subscription of subscriptions) {
+      const user = subscription.user;
+
+      await this.prismaService.userSubscription.update({
+        where: {
+          id: subscription.id,
+        },
+        data: {
+          status: SubscriptionStatus.EXPIRED,
+        },
+      });
+
+      this.logger.log(`🔒 Subscription expired for ${user.email}`);
     }
   }
 }

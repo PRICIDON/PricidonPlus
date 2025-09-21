@@ -16,6 +16,8 @@ model User {
 
   isAutoRenewal Boolean @default(true) @map("is_auto_renewal")
 
+  stripeCustomerId String? @unique @map("stripe_customer_id")
+
   subscription UserSubscription?
 
   transactions Transaction[]
@@ -59,6 +61,8 @@ model UserSubscription {
   endDate   DateTime? @map("end_date")
 
   transactions Transaction[]
+
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique @map("user_id")
