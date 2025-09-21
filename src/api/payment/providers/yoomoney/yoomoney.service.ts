@@ -14,12 +14,17 @@ import {
 import { YookassaWebhookDto } from "../../webhook/dto/yookassa-webhook.dto";
 import { type PaymentWebhookResult } from "../../interfaces/payment-webhook.interface";
 import { VatCodesEnum } from "nestjs-yookassa/dist/interfaces/receipt-details.interface";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class YoomoneyService {
   private readonly ALLOWED_IPS: string[];
+  private readonly APP_URL: string;
 
-  constructor(private readonly yookassaService: YookassaService) {
+  constructor(
+    private readonly yookassaService: YookassaService,
+    private readonly configService: ConfigService,
+  ) {
     this.ALLOWED_IPS = [
       "185.71.76.0/27",
       "185.71.77.0/27",
@@ -29,9 +34,11 @@ export class YoomoneyService {
       "77.75.154.128/25",
       "2a02:5180::/32",
     ];
+    this.APP_URL = this.configService.getOrThrow<string>("APP_URL");
   }
 
   async create(plan: Plan, transaction: Transaction) {
+    const successUrl = `${this.APP_URL}/payment/${transaction.id}`;
     const payment = await this.yookassaService.createPayment({
       amount: {
         value: transaction.amount,
@@ -43,7 +50,7 @@ export class YoomoneyService {
       },
       confirmation: {
         type: ConfirmationEnum.redirect,
-        return_url: "http://localhost:3000",
+        return_url: successUrl,
       },
       save_payment_method: true,
       metadata: {

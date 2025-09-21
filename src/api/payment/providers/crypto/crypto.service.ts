@@ -17,14 +17,17 @@ import { CryptoWebhookDto } from "../../webhook/dto/crypto-webhook.dto";
 @Injectable()
 export class CryptoService {
   private readonly TOKEN: string;
+  private readonly APP_URL: string;
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
     this.TOKEN = this.configService.getOrThrow<string>("CRYPTO_PAY_TOKEN");
+    this.APP_URL = this.configService.getOrThrow<string>("APP_URL");
   }
 
   async create(plan: Plan, transaction: Transaction) {
+    const successUrl = `${this.APP_URL}/payment/${transaction.id}`;
     const payload: CreateInvoiceRequest = {
       amount: transaction.amount,
       currency_type: Currency.FIAT,
@@ -32,7 +35,7 @@ export class CryptoService {
       description: `Оплата подписки на тарифный план: ${plan.title}`,
       hidden_message: "Спасибо за оплату! Подписка активирована",
       // paid_btn_name: PaidButtonName.CALLBACK,
-      // paid_btn_url: "https://pricidon.ru",
+      // paid_btn_url: successUrl,
       payload: Buffer.from(
         JSON.stringify({ transactionId: transaction.id, planId: plan.id }),
       ).toString("base64url"),

@@ -16,6 +16,7 @@ import { PrismaService } from "../../../../infra/prisma/prisma.service";
 export class StripeService {
   private readonly stripe: Stripe;
   private readonly WEBHOOK_SECRET: string;
+  private readonly APP_URL: string;
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
@@ -27,6 +28,7 @@ export class StripeService {
     this.WEBHOOK_SECRET = this.configService.getOrThrow<string>(
       "STRIPE_WEBHOOK_SECRET",
     );
+    this.APP_URL = this.configService.getOrThrow<string>("APP_URL");
   }
 
   async create(
@@ -41,8 +43,8 @@ export class StripeService {
         : plan.stripeYearlyPriceId;
     if (!priceId)
       throw new BadRequestException("Stripe priceId is missing for this plan");
-    const successUrl = "http://localhost:3000";
-    const cancelUrl = this.configService.getOrThrow<string>("APP_URL");
+    const success_url = `${this.APP_URL}/payment/${transaction.id}`;
+    const cancel_url = this.APP_URL;
 
     let customerId = user.stripeCustomerId;
     if (!customerId) {
@@ -72,8 +74,8 @@ export class StripeService {
         },
       ],
       mode: "subscription",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url,
+      cancel_url,
       metadata: {
         transactionId: transaction.id,
         planId: plan.id,

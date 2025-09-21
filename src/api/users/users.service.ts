@@ -10,6 +10,34 @@ export class UsersService {
     private readonly prismaService: PrismaService,
     private readonly stripeService: StripeService,
   ) {}
+  async getMe(id: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isAutoRenewal: true,
+        subscription: {
+          select: {
+            status: true,
+            startDate: true,
+            endDate: true,
+            plan: {
+              select: {
+                id: true,
+                title: true,
+                monthlyPrice: true,
+                yearlyPrice: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return user;
+  }
+
   async updateAutoRenewal(user: User, dto: UpdateAutoRenewalRequest) {
     const { isAutoRenewal } = dto;
 

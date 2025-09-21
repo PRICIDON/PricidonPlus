@@ -1,5 +1,5 @@
-import { IsBoolean } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsBoolean } from "class-validator";
 
 export class UpdateAutoRenewalRequest {
   @ApiProperty({
@@ -7,5 +7,13 @@ export class UpdateAutoRenewalRequest {
     description: "Enable or disable auto-renewal",
   })
   @IsBoolean()
-  isAutoRenewal: boolean;
+  public isAutoRenewal: boolean;
+}
+
+export class UpdateAutoRenewalResponse {
+  @ApiProperty({
+    example: true,
+    description: "Enable or disable auto-renewal",
+  })
+  public isAutoRenewal: boolean;
 }
