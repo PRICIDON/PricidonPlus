@@ -106,6 +106,7 @@ export class AuthService {
       sameSite: "none",
     });
   }
+
   private async auth(res: Response, user: User) {
     const { accessToken, refreshToken, refreshTokenExpires } =
       await this.generateTokens(user);
