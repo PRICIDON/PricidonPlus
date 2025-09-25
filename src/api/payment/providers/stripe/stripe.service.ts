@@ -43,7 +43,7 @@ export class StripeService {
         : plan.stripeYearlyPriceId;
     if (!priceId)
       throw new BadRequestException("Stripe priceId is missing for this plan");
-    const success_url = `${this.APP_URL}/payment/${transaction.id}`;
+    const success_url = `${this.APP_URL}/payment/${transaction.id}/success`;
     const cancel_url = this.APP_URL;
 
     let customerId = user.stripeCustomerId;

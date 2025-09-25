@@ -38,7 +38,7 @@ export class YoomoneyService {
   }
 
   async create(plan: Plan, transaction: Transaction) {
-    const successUrl = `${this.APP_URL}/payment/${transaction.id}`;
+    const successUrl = `${this.APP_URL}/payment/${transaction.id}/success`;
     const payment = await this.yookassaService.createPayment({
       amount: {
         value: transaction.amount,

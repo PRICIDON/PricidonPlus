@@ -9,6 +9,7 @@ import {
   CreateInvoiceRequest,
   Currency,
   InvoiceStatus,
+  PaidButtonName
 } from "./interfaces/create-invoice.interface";
 import { createHash, createHmac } from "crypto";
 import type { PaymentWebhookResult } from "../../interfaces/payment-webhook.interface";
@@ -27,15 +28,15 @@ export class CryptoService {
   }
 
   async create(plan: Plan, transaction: Transaction) {
-    const successUrl = `${this.APP_URL}/payment/${transaction.id}`;
+    const successUrl = `${this.APP_URL}/payment/${transaction.id}/success`;
     const payload: CreateInvoiceRequest = {
       amount: transaction.amount,
       currency_type: Currency.FIAT,
       fiat: FiatCurrency.RUB,
       description: `Оплата подписки на тарифный план: ${plan.title}`,
       hidden_message: "Спасибо за оплату! Подписка активирована",
-      // paid_btn_name: PaidButtonName.CALLBACK,
-      // paid_btn_url: successUrl,
+      paid_btn_name: PaidButtonName.CALLBACK,
+      paid_btn_url: successUrl,
       payload: Buffer.from(
         JSON.stringify({ transactionId: transaction.id, planId: plan.id }),
       ).toString("base64url"),
