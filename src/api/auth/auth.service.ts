@@ -103,7 +103,7 @@ export class AuthService {
       domain: this.COOKIES_DOMAIN,
       expires,
       secure: !isDev(this.configService),
-      sameSite: "lax",
+      sameSite: "none",
     });
   }
   private async auth(res: Response, user: User) {
